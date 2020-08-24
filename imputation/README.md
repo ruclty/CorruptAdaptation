@@ -1,5 +1,6 @@
 # Imputation Methods
 
+
 ## [Holoclean](https://github.com/HoloClean/holoclean)
 A statistical inference engine to impute, clean, and enrich data, mainly for numerical values.
 
@@ -8,3 +9,6 @@ Multivariate imputation by chained equations. Implemented by [Sklearn](https://s
 
 ## [GAIN](https://github.com/jsyoon0823/GAIN)
 Impute missing data using Generative Adversarial Networks.
+
+## Fill with MEAN
+## Fill with ZERO
