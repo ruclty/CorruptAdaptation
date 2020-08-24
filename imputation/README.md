@@ -1,7 +1,7 @@
 # Imputation Methods
 
 
-## Numerical Attributes
+## Numerical Attributes(May not work for Mixed-type data)
 * [Holoclean](https://github.com/HoloClean/holoclean): A statistical inference engine to impute, clean, and enrich data, mainly for numerical values.
 * MICE, KNN : Implemented by [Impyute](https://pypi.org/project/impyute/)
 
