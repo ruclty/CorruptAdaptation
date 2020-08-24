@@ -1,7 +1,9 @@
 # Codebase for "Generative Adversarial Imputation Networks (GAIN)"
 
 Authors: Jinsung Yoon, James Jordon, Mihaela van der Schaar
+
 Github Link: https://github.com/jsyoon0823/GAIN 
+
 Paper Link: http://proceedings.mlr.press/v80/yoon18a/yoon18a.pdf
 
 ### Command inputs:
