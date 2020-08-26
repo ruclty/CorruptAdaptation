@@ -1,0 +1,36 @@
+[
+	{
+		"name": "HTRU2_fill0_0_0.csv",
+		"train_data": "dataset/HTRU2/train_0.csv",		
+		"test_data": "dataset/HTRU2/test_0.csv",
+		"imputation": "ZERO",
+		"input_shape":[8],
+		"label_column": "8",
+		"epoch_space":[10, 50, 80, 100],
+		"batch_size":[8, 16, 32, 64],
+		"l2":[0, 0.001, 0.01, 0.1]
+
+	},
+	{
+		"name": "HTRU2_fill0_0_0.1.csv",
+		"train_data": "dataset/HTRU2/train_0.csv",		
+		"test_data": "dataset/HTRU2/test_0.1.csv",
+		"imputation": "ZERO",
+		"input_shape":[8],
+		"label_column": "8",
+		"epoch_space":[10, 50, 80, 100],
+		"batch_size":[8, 16, 32, 64],
+		"l2":[0, 0.001, 0.01, 0.1]
+	},
+	{
+		"name": "HTRU2_fillmean_0_0.1.csv",
+		"train_data": "dataset/HTRU2/train_0.csv",		
+		"test_data": "dataset/HTRU2/test_0.1.csv",
+		"imputation": "MEAN",
+		"input_shape":[8],
+		"label_column": "8",
+		"epoch_space":[10, 50, 80, 100],
+		"batch_size":[8, 16, 32, 64],
+		"l2":[0, 0.001, 0.01, 0.1]
+	}
+]
