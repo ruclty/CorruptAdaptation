@@ -5,7 +5,7 @@
 		"test_data": "dataset/eyestate/test_0.csv",
 		"imputation": "ZERO",
 		"input_shape":[14],
-		"label_column": '14',
+		"label_column": "14",
 		"epoch_space":[700, 1500, 2000, 2500, 3000, 4000, 5000, 6000],
 		"batch_size":[2516],
 		"l2":[0, 0.001, 0.01, 0.1]
@@ -16,7 +16,7 @@
 		"test_data": "dataset/eyestate/test_0.1.csv",
 		"imputation": "MEAN",
 		"input_shape":[14],
-		"label_column": '14',
+		"label_column": "14",
 		"epoch_space":[700, 1500, 2000, 2500, 3000, 4000, 5000, 6000],
 		"batch_size":[2516],
 		"l2":[0, 0.001, 0.01, 0.1]
