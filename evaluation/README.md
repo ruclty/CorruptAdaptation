@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
  - name: required, name of the output file 
  - train_data: required, path of the train data 
  - test_data: required, path of the test data 
- - imputation: required, imputation method including "ZERO" or "MEAN"
+ - imputation: required, imputation method including "ZERO", "MEAN", "MICE", or "GAIN"
  - input_shape: required, input number of features
  - label_column: required, name of label column
  - epoch_space: required, list of training epochs for grid search 

@@ -1,6 +1,7 @@
 # input argv dataname testname roundname
 import numpy as np
 import pandas as pd
+import impyute as impt
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras import regularizers
@@ -14,6 +15,7 @@ import sys
 import argparse
 import json
 import multiprocessing
+from main import GAIN
 
 
 def mf1(y_true, y_pred):
@@ -103,18 +105,6 @@ def result_sum(mlp_val, name):
 
 def thread_run(config, train_data, test_data):
     data = pd.concat([train_data, test_data], keys=['train', 'test'])
-    # imputation
-    if config["imputation"]=="ZERO":
-        data = data.fillna(0)
-    elif config["imputation"]=="MEAN":
-        for column in data.columns:
-            if data[column].isnull().sum() > 0:
-                if is_object_dtype(data[column]):
-                    constant = data[column].mode()
-                    data[column] = data[column].fillna(constant)
-                else:
-                    constant = data[column].mean()
-                    data[column] = data[column].fillna(constant)
     
     # drop unnecessary columns
     try:
@@ -129,14 +119,40 @@ def thread_run(config, train_data, test_data):
         data = data.drop(columns=['Unnamed: 0.1.1'])
     except:
         pass
-
+        
     # transform the categorical columns into numerical columns
-    featured_con_data = feature_encoder(data)
+    tmpdata=data.fillna(0)
+    featured_con_data = feature_encoder(tmpdata)
+    data=featured_con_data[~data.isna()]
+            
+    # imputation
+    if config["imputation"]=="ZERO":
+        data = data.fillna(0)
+    elif config["imputation"]=="MEAN":
+        for column in data.columns:
+            if data[column].isnull().sum() > 0:
+                if is_object_dtype(data[column]):
+                    constant = data[column].mode()
+                    data[column] = data[column].fillna(constant)
+                else:
+                    constant = data[column].mean()
+                    data[column] = data[column].fillna(constant)
+    elif config["imputation"]=="MICE":
+        imdata = impt.mice(data)
+        imdata.columns = data.columns
+        imdata.index = data.index
+        data = imdata.copy()
+    elif config["imputation"]=="GAIN":
+        imdata = GAIN(data)
+        imdata.columns = data.columns
+        imdata.index = data.index
+        data = imdata.copy()
+        
     
     # split train and test from data
     label_column = config["label_column"]
-    train_data = featured_con_data.loc['train']
-    test_data = featured_con_data.loc['test']
+    train_data = data.loc['train']
+    test_data = data.loc['test']
     X_train = train_data.drop(axis=1, columns=[label_column])
     train_y = train_data[label_column]
     X_test = test_data.drop(axis=1, columns=[label_column])
