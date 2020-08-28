@@ -6,7 +6,7 @@
 		"imputation": "ZERO",
 		"input_shape":[14],
 		"label_column": "14",
-		"epoch_space":[600, 800, 1000, 1500, 2000, 2500],
+		"epoch_space":[800, 1000, 1500, 2500],
 		"batch_size":[7597],
 		"l2":[0, 0.001, 0.01, 0.1]
 	},
@@ -17,7 +17,7 @@
 		"imputation": "MEAN",
 		"input_shape":[14],
 		"label_column": "14",
-		"epoch_space":[600, 800, 1000, 1500, 2000, 2500],
+		"epoch_space":[800, 1000, 1500, 2500],
 		"batch_size":[7597],
 		"l2":[0, 0.001, 0.01, 0.1]
 	}

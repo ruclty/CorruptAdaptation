@@ -6,8 +6,8 @@
 		"imputation": "ZERO",
 		"input_shape":[8],
 		"label_column": "8",
-		"epoch_space":[10, 50, 80, 100],
-		"batch_size":[8, 16, 32, 64],
+		"epoch_space":[100, 500, 300, 700],
+		"batch_size":[1936],
 		"l2":[0, 0.001, 0.01, 0.1]
 
 	},
@@ -18,8 +18,8 @@
 		"imputation": "ZERO",
 		"input_shape":[8],
 		"label_column": "8",
-		"epoch_space":[10, 50, 80, 100],
-		"batch_size":[8, 16, 32, 64],
+		"epoch_space":[100, 500, 300, 700],
+		"batch_size":[1936],
 		"l2":[0, 0.001, 0.01, 0.1]
 	},
 	{
@@ -29,8 +29,8 @@
 		"imputation": "MEAN",
 		"input_shape":[8],
 		"label_column": "8",
-		"epoch_space":[10, 50, 80, 100],
-		"batch_size":[8, 16, 32, 64],
+		"epoch_space":[100, 500, 300, 700],
+		"batch_size":[1936],
 		"l2":[0, 0.001, 0.01, 0.1]
 	}
 ]
