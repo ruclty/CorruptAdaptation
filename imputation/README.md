@@ -11,6 +11,7 @@
     * Install R on Windows: <https://pan.baidu.com/s/1kW-vutRESSgFOkyQ0WJ3Bg>, code: ue5r
         * Firstly run R-4.0.2-win.exe, then install RStudio.
     * Open RStudio
+    
 Install mice package:
 ```sh
 > install.packages("mice")
