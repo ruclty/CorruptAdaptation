@@ -1,9 +1,8 @@
 [
 	{
-		"name": "adult_fill0_0_0.csv",
+		"name": "adult_0_0.csv",
 		"train_data": "dataset/adult/train_0.csv",		
 		"test_data": "dataset/adult/test_0.csv",
-		"imputation": "ZERO",
 		"input_shape":[14],
 		"label_column": "14",
 		"epoch_space":[800, 1000, 1500, 2500],
@@ -14,7 +13,6 @@
 		"name": "adult_fillmean_0_0.1.csv",
 		"train_data": "dataset/adult/train_0.csv",		
 		"test_data": "dataset/adult/test_0.1.csv",
-		"imputation": "MEAN",
 		"input_shape":[14],
 		"label_column": "14",
 		"epoch_space":[800, 1000, 1500, 2500],

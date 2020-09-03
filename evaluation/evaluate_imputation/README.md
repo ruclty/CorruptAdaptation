@@ -1,4 +1,4 @@
-# Corrupt Domain Adaptation Evaluation
+# Corrupt Domain Adaptation Evaluation for Prediciton
 
 ## Requirements
 Before running the code, please make sure your Python version is above **3.5**.
@@ -12,8 +12,7 @@ pip3 install -r requirements.txt
 
  - name: required, name of the output file 
  - train_data: required, path of the train data 
- - test_data: required, path of the test data 
- - imputation: required, imputation method including "ZERO", "MEAN", "MICE", or "GAIN"
+ - test_data: required, path of the test data
  - input_shape: required, input number of features
  - label_column: required, name of label column
  - epoch_space: required, list of training epochs for grid search 
@@ -25,5 +24,5 @@ Folder "params" contains examples, you can run the code using those parameter fi
 ## Run
 Run the code with the following command :
 ```sh
-python evaluate.py [parameter file]
+python evaluate_prediction.py [parameter file]
 ```

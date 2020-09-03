@@ -1,7 +1,5 @@
-# input argv dataname testname roundname
 import numpy as np
 import pandas as pd
-import impyute as impt
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras import regularizers
@@ -15,7 +13,9 @@ import sys
 import argparse
 import json
 import multiprocessing
-from main import GAIN
+import os
+import time
+from pandas.api.types import is_object_dtype
 
 
 def mf1(y_true, y_pred):
@@ -48,17 +48,19 @@ def mf1(y_true, y_pred):
 
 
 def feature_encoder(label_data):
-    # transform catecorical columns into numerical columns
+    # transform categorical columns into numerical columns
     from sklearn.preprocessing import LabelEncoder
     from pandas.api.types import is_object_dtype
     label_con_data = label_data.copy()
+    gens = {}
     for column in label_data.columns:
         if is_object_dtype(label_data[column]):
             gen_le = LabelEncoder()
             gen_labels = gen_le.fit_transform(list(label_data[column]))
-            label_con_data[column] = gen_labels
+            label_con_data.loc[:, column] = gen_labels  # to label from 0
+            gens[column] = gen_le  # save the transformer to inverse
     # return a DataFrame
-    return label_con_data
+    return label_con_data, gens
 
 
 # the model KerasClassifier needs
@@ -99,7 +101,7 @@ def result_sum(mlp_val, name):
                               index=['recall', 'precision', 'f1_score', 'balanced recall', 'balanced precision',
                                      'balanced f1_score', 'threshold', 'best_parameters'])
 
-    val_result.to_csv(name,encoding='utf_8_sig')
+    val_result.to_csv(name, encoding='utf_8_sig')
     print('the results are in %s' % (name))
 
 
@@ -119,40 +121,14 @@ def thread_run(config, train_data, test_data):
         data = data.drop(columns=['Unnamed: 0.1.1'])
     except:
         pass
-        
+
     # transform the categorical columns into numerical columns
-    tmpdata=data.fillna(0)
-    featured_con_data = feature_encoder(tmpdata)
-    data=featured_con_data[~data.isna()]
-            
-    # imputation
-    if config["imputation"]=="ZERO":
-        data = data.fillna(0)
-    elif config["imputation"]=="MEAN":
-        for column in data.columns:
-            if data[column].isnull().sum() > 0:
-                if is_object_dtype(data[column]):
-                    constant = data[column].mode()
-                    data[column] = data[column].fillna(constant)
-                else:
-                    constant = data[column].mean()
-                    data[column] = data[column].fillna(constant)
-    elif config["imputation"]=="MICE":
-        imdata = impt.mice(data)
-        imdata.columns = data.columns
-        imdata.index = data.index
-        data = imdata.copy()
-    elif config["imputation"]=="GAIN":
-        imdata = GAIN(data)
-        imdata.columns = data.columns
-        imdata.index = data.index
-        data = imdata.copy()
-        
-    
+    featured_con_data, gens = feature_encoder(data)
+
     # split train and test from data
     label_column = config["label_column"]
-    train_data = data.loc['train']
-    test_data = data.loc['test']
+    train_data = featured_con_data.loc['train']
+    test_data = featured_con_data.loc['test']
     X_train = train_data.drop(axis=1, columns=[label_column])
     train_y = train_data[label_column]
     X_test = test_data.drop(axis=1, columns=[label_column])
@@ -204,6 +180,7 @@ def thread_run(config, train_data, test_data):
     # 输出格式化的结果
     result_sum(mlp_val, config["name"])
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('configs', help='a json config file')
@@ -211,20 +188,13 @@ if __name__ == "__main__":
 
     with open(args.configs) as f:
         configs = json.load(f)
-    try:
-        os.mkdir("expdir")
-    except:
-        pass
 
     for config in configs:
-        path = "expdir/"+config["name"]+"/"
-        try:
-            os.mkdir("expdir/"+config["name"])
-        except:
-            pass
+
         train_data = pd.read_csv(config["train_data"])
         test_data = pd.read_csv(config["test_data"])
 
         job = multiprocessing.Process(target=thread_run, args=(config, train_data, test_data))
         job.start()
+        job.join()
 
