@@ -27,10 +27,10 @@ pip3 install -r requirements.txt
  - rand_search: required, whether to search hyper-parameters randomly, yes or no ,
  - param: required if rand_search is 'no', hyper-parameter of the NN  
 
-Folder "params" contains examples, you can run the code using those parameter files directly, or write a self-defined parameter file to train a new dataset.
+Folder "code/params" contains examples, you can run the code using those parameter files directly, or write a self-defined parameter file to train a new dataset.
 
 ## Run
 Run the code with the following command :
 ```sh
-python train.py [parameter file]
+python code/train.py [parameter file]
 ```
