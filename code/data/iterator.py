@@ -97,8 +97,9 @@ class Iterator:
 		if self.mask is not None:
 			mask_df = pd.read_csv(self.mask)
 			self.masks = mask_df.values
-		
-		
+			if self.labels is not None:
+				self.masks = self.masks[:, 0:self.masks.shape[1]-1]
+				
 	def sample(self, num_sample = None, label = None, mask=False):
 		sample_label = None
 		sample_mask = None

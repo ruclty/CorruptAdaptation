@@ -8,6 +8,16 @@ import pandas as pd
 import os
 from torch.autograd import Variable
 
+def mask_operate(data, mask, col_ind):
+	result = []
+	for i in range(mask.shape[1]):
+		sta = col_ind[i][0]
+		end = col_ind[i][1]
+		#data[:, sta:end] = data[:, sta:end]*mask[:, i:i+1]
+		result.append(data[:, sta:end]*mask[:, i:i+1])
+	result = torch.cat(result, dim = 1)
+	return result
+
 class MaskGenerator_MLP(nn.Module):
 	def __init__(self, z_dim, data_dim, hidden_dims, mask_dim):
 		super(MaskGenerator_MLP, self).__init__()
@@ -35,11 +45,11 @@ class MaskGenerator_MLP(nn.Module):
 
 
 class ObservedGenerator_MLP(nn.Module):
-	def __init__(self, z_dim, hidden_dims, x_dim, c_dim, col_type, col_ind):
+	def __init__(self, z_dim, hidden_dims, x_dim, mask_dim, col_type, col_ind):
 		super(ObservedGenerator_MLP, self).__init__()
 		self.col_type = col_type
 		self.col_ind = col_ind
-		dim = z_dim + c_dim
+		dim = z_dim + x_dim + mask_dim
 		seq = []
 		for item in list(hidden_dims):
 			fc = nn.Linear(dim, item)
@@ -55,9 +65,9 @@ class ObservedGenerator_MLP(nn.Module):
 		nn.init.xavier_normal_(seq[-1].weight)
 		self.net = nn.Sequential(*seq)
 
-	def forward(self, z, c):
-		z = torch.cat((z, c), dim = 1)
-		x = self.net(z)
+	def forward(self, z, x, m):
+		input = torch.cat((z, x, m), dim = 1)
+		data = self.net(input)
 		output = []
 		for i in range(len(self.col_type)):
 			sta = self.col_ind[i][0]
@@ -65,29 +75,31 @@ class ObservedGenerator_MLP(nn.Module):
 			if self.col_type[i] == 'condition':
 				continue
 			if self.col_type[i] == 'normalize':
-				temp = torch.tanh(x[:,sta:end])
+				temp = torch.tanh(data[:,sta:end])
 			elif self.col_type[i] == 'one-hot':
-				temp = torch.softmax(x[:,sta:end], dim=1)
+				temp = torch.softmax(data[:,sta:end], dim=1)
 			elif self.col_type[i] == 'gmm':
-				temp1 = torch.tanh(x[:,sta:sta+1])
-				temp2 = torch.softmax(x[:,sta+1:end], dim=1)
+				temp1 = torch.tanh(data[:,sta:sta+1])
+				temp2 = torch.softmax(data[:,sta+1:end], dim=1)
 				temp = torch.cat((temp1,temp2),dim=1)
 			elif self.col_type[i] == 'ordinal':
-				temp = torch.sigmoid(x[:,sta:end])
+				temp = torch.sigmoid(data[:,sta:end])
 			output.append(temp)
 		output = torch.cat(output, dim = 1)
 		return output
 
 class ObservedGenerator_LSTM(nn.Module):
-	def __init__(self, z_dim, feature_dim, lstm_dim, col_dim, col_type, c_dim):
+	def __init__(self, z_dim, feature_dim, lstm_dim, col_dim, col_type, col_ind, x_dim, mask_dim):
 		super(ObservedGenerator_LSTM, self).__init__()
-		self.c_dim = c_dim
+		self.x_dim = x_dim
+		self.mask_dim = mask_dim
 		self.l_dim = lstm_dim
 		self.f_dim = feature_dim
 		self.col_dim = col_dim
+		self.col_ind = col_ind
 		self.col_type = col_type
 		self.GPU = False
-		self.LSTM = nn.LSTMCell(z_dim+c_dim+feature_dim, lstm_dim) # input (fx, z, attention), output(hx, cx)
+		self.LSTM = nn.LSTMCell(z_dim+x_dim+mask_dim+feature_dim, lstm_dim) # input (fx, z, attention), output(hx, cx)
 		self.FC = {}	 # FullyConnect layers for every columns 
 		self.Feature = {}
 		self.go = nn.Parameter(torch.randn(1, self.f_dim))
@@ -124,10 +136,10 @@ class ObservedGenerator_LSTM(nn.Module):
 				setattr(self, "fe%d"%i, fe)
 				self.Feature[i] = fe
 
-	def forward(self, z, c):
+	def forward(self, z, x, m):
 		states = []
 		outputs = []
-		z = torch.cat((z, c),dim=1)
+		z = torch.cat((z, x, m),dim=1)
 		hx = torch.randn(z.size(0), self.l_dim)
 		cx = torch.randn(z.size(0), self.l_dim)
 		fx = self.go.repeat([z.size(0), 1])
@@ -169,7 +181,7 @@ class ObservedGenerator_LSTM(nn.Module):
 				outputs.append(v)
 				fx = self.FC[i][1](v)
 				inputs = torch.cat((z, fx), dim = 1)
-		true_output = torch.cat(outputs, dim = 1)		
+		true_output = torch.cat(outputs, dim = 1)
 		return true_output
 
 class Discriminator(nn.Module):

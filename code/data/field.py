@@ -17,7 +17,7 @@ class NumericalField:
 		if self.learned:
 			return
 		if self.model_name == "gmm":
-			self.model.fit(self.fitdata)
+			self.model.fit(self.fitdata[~np.isnan(self.fitdata)].reshape(-1,1))
 			#get the mixture distribution parameters: weights, means, stds
 			self.weights = self.model.weights_
 			self.means = self.model.means_.reshape((1, self.n))[0]
@@ -45,12 +45,18 @@ class NumericalField:
 		assert isinstance(data, np.ndarray)
 		assert data.shape[1] == 1
 		if self.model_name == "gmm":
-			features = (data - self.means) / (2 * self.stds)
-			probs = self.model.predict_proba(data)
+			nanindex = np.isnan(data)
+			data_clean = np.copy(data)
+			data_clean[nanindex] = 0
+			features = (data_clean - self.means) / (2 * self.stds)
+			probs = self.model.predict_proba(data_clean)
 			argmax = np.argmax(probs, axis=1)	
 			idx = np.arange(len(features))
 			features = features[idx, argmax].reshape(-1, 1)
 			features = np.concatenate((features, probs), axis=1)
+			for i in range(features.shape[0]):
+				if nanindex[i][0]:
+					features[i] = 0
 		elif self.model_name == "normalize":
 			if self.K == -1:
 				featurs = data * 0
@@ -64,11 +70,15 @@ class NumericalField:
 			assert features.shape[1] == self.n + 1
 			v = features[:, 0]
 			u = features[:, 1:self.n+1].reshape(-1, self.n)
+			nanindex = np.sum(u, axis=1)==0.0
 			argmax = np.argmax(u, axis=1)
 			mean = self.means[argmax]
 			std = self.stds[argmax]
 			v_ = v * 2 * std + mean
 			data = v_.reshape(-1, 1)
+			for i in range(len(nanindex)):
+				if nanindex[i]:
+					data[i][0] = np.nan
 		elif self.model_name == "normalize":
 			assert features.shape[1] == 1
 			if self.K == -1:
@@ -91,9 +101,24 @@ class CategoricalField:
 		self.method = method
 		self.fitdata = None
 		self.noise = noise
-		
+
+	def get_nan_index(self, data):
+		assert isinstance(data, np.ndarray)
+		if data.dtype == np.object:
+			nanindex = np.zeros(data.shape)
+			for i in range(data.shape[0]):
+				if type(data[i][0]) == float:
+					nanindex[i][0] = True
+				else:
+					nanindex[i][0] = False
+		else:
+			nanindex = np.isnan(data)
+		nanindex = nanindex.astype(bool)
+		return nanindex
+
 	def learn(self):
-		self.vset = np.unique(self.fitdata)
+		nanindex = self.get_nan_index(self.fitdata)
+		self.vset = np.unique(self.fitdata[~nanindex].reshape(-1,1))
 		for idx, v in enumerate(self.vset):
 			self.dict[v] = idx
 			self.rev_dict[idx] = v
@@ -114,12 +139,13 @@ class CategoricalField:
 	def convert(self, data):
 		assert isinstance(data, np.ndarray)
 		assert data.shape[1] == 1
-        
-		origin = data
-		data = data.reshape(1, -1)
-		data = list(map(lambda x: self.dict[x], data[0]))
-		data = np.asarray(data).reshape(-1, 1)
-		features = data
+		nanindex = self.get_nan_index(data)
+		clean = np.copy(data)
+		clean[nanindex] = self.rev_dict[0]
+		clean = clean.reshape(1, -1)
+		clean = list(map(lambda x: self.dict[x], clean[0]))
+		clean = np.asarray(clean).reshape(-1, 1)
+		features = clean
 		if self.method == "dict":
 			self.dim = 1
 			features = self.K * (data - self.Min)
@@ -139,16 +165,18 @@ class CategoricalField:
 			return features
 			
 		if self.method == "one-hot":
-			features = np.zeros((data.shape[0], len(self.dict)), dtype="int")
+			features = np.zeros((clean.shape[0], len(self.dict)), dtype="int")
 			idx = np.arange(len(features))
-			features[idx, data.reshape(1, -1)] = 1
+			features[idx, clean.reshape(1, -1)] = 1
 			self.dim = len(self.dict)
 			if self.noise is not None:
 				noise = np.random.uniform(0,self.noise,features.shape)
 				features = features + noise
 				temp = np.sum(features, axis=1).reshape(-1,1)
 				features = features/temp
-		
+			for i in range(features.shape[0]):
+				if nanindex[i][0]:
+					features[i] = 0
 		return features
 		
 	def reverse(self, features):
@@ -163,6 +191,7 @@ class CategoricalField:
 					features[i][0] += data[i][j] * (2**(self.dim-1-j))
 			
 		if self.method == "one-hot":
+			nanindex = np.sum(features, axis=1)==0.0
 			features = np.argmax(features, axis=1)
 		
 		if self.method == "dict":
@@ -176,7 +205,10 @@ class CategoricalField:
 		features = features.reshape(1, -1)
 		data = list(map(lambda x: self.rev_dict[x], features[0]))
 		data = np.asarray(data).reshape(-1, 1)
-		
+		data = data.astype(np.object)
+		for i in range(len(nanindex)):
+			if nanindex[i]:
+				data[i][0] = np.nan
 		return data	
 	
 	def get_dim(self):
