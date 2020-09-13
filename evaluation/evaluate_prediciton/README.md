@@ -26,3 +26,5 @@ Run the code with the following command :
 ```sh
 python evaluate_prediction.py [parameter file]
 ```
+
+For pytorch version please run evaluate_torch.py.
