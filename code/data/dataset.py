@@ -42,7 +42,7 @@ class Dataset:
 				continue
 			assert field is None or isinstance(field, (NumericalField, CategoricalField))
 			if isinstance(field, CategoricalField):
-				values = self.raw_file[col].astype(str).values.reshape(-1,1)
+				values = self.raw_file[col].values.reshape(-1,1)
 			else:
 				values = self.raw_file[col].values.reshape(-1, 1)
 			Field = field

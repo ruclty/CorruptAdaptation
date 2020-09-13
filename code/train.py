@@ -29,18 +29,26 @@ def parameter_search(gen_model):
 	param["batch_size"] = choice(parameters_space["batch_size"])
 	param["z_dim"] = choice(parameters_space["z_dim"])
 
+	param["mask_gen_hidden_dims"] = []
+	gen_num_layers = choice(parameters_space["gen_num_layers"])
+	for l in range(gen_num_layers):
+		dim = choice(parameters_space["gen_hidden_dim"])
+		if l > 0 and param["mask_gen_hidden_dims"][l-1] > dim:
+			dim = param["mask_gen_hidden_dims"][l-1]
+		param["mask_gen_hidden_dims"].append(dim)
+
 	if gen_model == "MLP":
-		param["gen_hidden_dims"] = []
+		param["obs_gen_hidden_dims"] = []
 		gen_num_layers = choice(parameters_space["gen_num_layers"])
 		for l in range(gen_num_layers):
 			dim = choice(parameters_space["gen_hidden_dim"])
-			if l > 0 and param["gen_hidden_dims"][l-1] > dim:
-				dim = param["gen_hidden_dims"][l-1]
-			param["gen_hidden_dims"].append(dim)
+			if l > 0 and param["obs_gen_hidden_dims"][l-1] > dim:
+				dim = param["obs_gen_hidden_dims"][l-1]
+			param["obs_gen_hidden_dims"].append(dim)
 
 	elif gen_model == "LSTM":
-		param["gen_feature_dim"] = choice(parameters_space["gen_feature_dim"])
-		param["gen_lstm_dim"] = choice(parameters_space["gen_lstm_dim"])
+		param["obs_gen_feature_dim"] = choice(parameters_space["gen_feature_dim"])
+		param["obs_gen_lstm_dim"] = choice(parameters_space["gen_lstm_dim"])
 
 	param["obs_dis_hidden_dims"] = []
 	dis_num_layers = choice(parameters_space["dis_num_layers"])
@@ -72,39 +80,40 @@ def thread_run(path, search, config, source_dst, target_dst, GPU):
 	with open(path+"exp_params.json", "a") as f:
 		json.dump(param, f)
 		f.write("\n")
-		
 
-	source_it = Iterator(dataset=source_dst, batch_size=20, shuffle=True)
-	target_it = Iterator(dataset=target_dst, batch_size=20, shuffle=True, mask=config["target_mask"])
+	source_it = Iterator(dataset=source_dst, batch_size=param["batch_size"], shuffle=False, labels=config["labels"], mask=config["source_mask"])
+	target_it = Iterator(dataset=target_dst, batch_size=param["batch_size"], shuffle=False, labels=config["labels"], mask=config["target_mask"])
 
 	x_dim = source_it.data.shape[1]
 	col_ind = source_dst.col_ind
 	col_dim = source_dst.col_dim
 	col_type = source_dst.col_type
 	mask_dim = target_it.masks.shape[1]
-
-	if config["gen_model"] == "LSTM":
-		mask_gen = ObservedGenerator_LSTM(param["zx_dim"], param["obs_gen_feature_dim"], param["obs_gen_lstm_dim"], col_dim, col_type, c_dim)
-	elif config["gen_model"] == "MLP":
-		mask_gen = MaskGenerator_MLP(param["z_dim"], x_dim, param["gen_hidden_dims"], mask_dim)
-
+	if config["Gm"] == "yes":
+		mask_gen = MaskGenerator_MLP(param["z_dim"], x_dim, param["mask_gen_hidden_dims"], mask_dim)
+		mask_dis = Discriminator(mask_dim, param["mask_dis_hidden_dims"], c_dim=x_dim, condition=True)
+	else:
+		mask_gen = None
+		mask_dis = None
+	if config["Gx"] == "yes":
+		if config["gen_model"] == "LSTM":
+			obs_gen = ObservedGenerator_LSTM(param["z_dim"], param["obs_gen_feature_dim"], param["obs_gen_lstm_dim"], col_dim, col_type, c_dim)
+		elif config["gen_model"] == "MLP":
+			obs_gen = ObservedGenerator_MLP(param["z_dim"], param["obs_gen_hidden_dims"], x_dim,  mask_dim, col_type, col_ind)
+	else:
+		obs_gen = None
 	obs_dis = Discriminator(x_dim, param["obs_dis_hidden_dims"])
-	mask_dis = Discriminator(mask_dim, param["mask_dis_hidden_dims"], c_dim=x_dim, condition=True)
-
+	
 	print(mask_gen)
 	print(mask_dis)
+	print(obs_gen)
 	print(obs_dis)
 
-	handler = Handler(mask_gen=mask_gen, mask_dis=mask_dis, obs_dis=obs_dis)
-
-	if "training" not in config.keys():
-		config["training"] = "Joint"
-	if config["training"] == "Joint":
-		mask_gen, mask_dis, obs_dis = handler.train_joint(mask_gen, mask_dis, obs_dis, param["cp"], param["dis_train_num"], param["z_dim"], config["epochs"], config["steps_per_epoch"], param["lr"], source_it, target_it, source_dst, path, search, GPU=GPU)
-	elif config["training"] == "Mask":
-		mask_gen, mask_dis, obs_dis = handler.train_mask(mask_gen, mask_dis, obs_dis, param["cp"], param["dis_train_num"], param["z_dim"], config["epochs"], config["steps_per_epoch"], param["lr"], source_it, target_it, source_dst, path, search, GPU=GPU)	
-	elif config["training"] == "Observer":
-		mask_gen, mask_dis, obs_dis = handler.train_obs(mask_gen, mask_dis, obs_dis, param["cp"], param["dis_train_num"], param["z_dim"], config["epochs"], config["steps_per_epoch"], param["lr"], source_it, target_it, source_dst, path, search, GPU=GPU)	
+	handler = Handler(source_it, target_it, source_dst, path)
+	if mask_gen is None and obs_gen is None:
+		handler.translate(mask_gen, obs_gen, param["z_dim"], path+"translate_{}".format(search), GPU=True, repeat=1)
+	else:	
+		mask_gen, obs_gen, mask_dis, obs_dis = handler.train(mask_gen, obs_gen, mask_dis, obs_dis, param, config, search, GPU=GPU)	
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -168,7 +177,7 @@ if __name__ == "__main__":
 
 		print("source row : {}".format(len(source_dst)))
 		print("target row: {}".format(len(target_dst)))
-		
+
 		n_search = config["n_search"]
 		jobs = [multiprocessing.Process(target=thread_run, args=(path, search, config, source_dst, target_dst, GPU)) for search in range(n_search)]	
 		for j in jobs:
