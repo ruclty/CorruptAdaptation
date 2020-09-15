@@ -21,6 +21,8 @@ pip3 install -r requirements.txt
 
 Folder "params" contains examples, you can run the code using those parameter files directly, or write a self-defined parameter file to train a new dataset.
 
+But for simple version, "input_shape" and "epoch_space" should be one scalar instead of list, and batch_size is not required.
+
 ## Run
 Run the code with the following command :
 ```sh
@@ -28,3 +30,4 @@ python evaluate_prediction.py [parameter file]
 ```
 
 For pytorch version please run evaluate_torch.py.
+For quick version please run evaluate_simple.py
