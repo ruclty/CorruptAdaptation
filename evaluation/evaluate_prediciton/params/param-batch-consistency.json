@@ -1,0 +1,13 @@
+[
+    {
+        "adapt_data": "/home/lyq/eyestate/Setting19/KADAPT_TRAIN_SPLIT_MICE/adapt_train_0.5_0.5.data",
+        "consistency": "yes",
+        "epoch_space": 3000,
+        "input_shape": 14,
+        "l2": 0.01,
+        "label_column": "14",
+        "name": "/home/lty/lyq/eyestate/Setting19/KADAPT_TRAIN_SPLIT_MICE/round1_0.4_0.5_0.01_yes.csv",
+        "test_data": "/home/lyq/eyestate/Setting19/KADAPT_TRAIN_SPLIT_MICE/test_0.5_0.5.data",
+        "train_data": "/home/lyq/eyestate/Setting19/KADAPT_TRAIN_SPLIT_MICE/train_0.4_0.4.data"
+    }
+]
