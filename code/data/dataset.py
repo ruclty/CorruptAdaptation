@@ -177,7 +177,7 @@ class Column:
 	def reverse(self, features):
 		if self.Field is not None:
 			data = self.Field.reverse(features)
-			data = data.astype(self.values.dtype)
+			#data = data.astype(self.values.dtype)
 			return data
 		return features
 

@@ -390,6 +390,7 @@ class Handler:
 			obs_gen.eval()
 		for time in range(repeat):
 			sample_data = []
+			sample_data_nomask = []
 			for x_source, c_source, m_source in self.sourceloader:
 				x_target, c_target, m_target = self.targetloader.sample(mask=True, num_sample=x_source.shape[0])
 				x_target = mask_operate(x_target, m_target, self.dataset.col_ind)
@@ -412,16 +413,23 @@ class Handler:
 				else:
 					m_fake = m_target
 				m_fake = torch.round(m_fake)
+				samples_nomask = x_impute.cpu()
 				samples = mask_operate(x_impute, m_fake, self.dataset.col_ind)
 				samples = samples.cpu()
 				samples = torch.cat((samples, c_source), dim=1)
+				samples_nomask = torch.cat((samples_nomask, c_source), dim=1)
 				sample_table = self.dataset.reverse(samples.detach().numpy())
+				sample_nomask_table = self.dataset.reverse(samples_nomask.detach().numpy())
 				df = pd.DataFrame(sample_table, columns=self.dataset.columns)
+				df_nomask = pd.DataFrame(sample_nomask_table, columns=self.dataset.columns)
 				if len(sample_data) == 0:
 					sample_data = df
+					sample_data_nomask = df_nomask
 				else:
 					sample_data = sample_data.append(df)
+					sample_data_nomask = sample_data_nomask.append(df_nomask)
 			sample_data.to_csv(file_path+"_"+str(time)+".csv", index = None)
+			sample_data_nomask.to_csv(file_path+"_"+str(time)+"_nomask.csv", index=None)
 		if mask_gen is not None:
 			mask_gen.train()
 		if obs_gen is not None:

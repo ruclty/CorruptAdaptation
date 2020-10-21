@@ -11,15 +11,15 @@ import json
 import os
 
 parameters_space = {
-	"batch_size":[256, 512],
+	"batch_size":[64, 128, 256],
 	"z_dim":[100, 200, 300], 
 	"gen_num_layers":[1,2,3],
 	"gen_hidden_dim":[100, 200, 300, 400],
-	"gen_feature_dim":[100,200],
+	"gen_feature_dim":[100, 200, 300, 400, 500],
 	"gen_lstm_dim":[100,200,300,400,500],
 	"dis_hidden_dim":[100, 200, 300],
 	"dis_num_layers":[1,2,3],
-	"lr":[0.0001],
+	"lr":[0.0001,0.0002,0.0005],
 	"cp":[0.01],
 	"dis_train_num" :[1, 2, 5]
 }
@@ -97,7 +97,7 @@ def thread_run(path, search, config, source_dst, target_dst, GPU):
 		mask_dis = None
 	if config["Gx"] == "yes":
 		if config["gen_model"] == "LSTM":
-			obs_gen = ObservedGenerator_LSTM(param["z_dim"], param["obs_gen_feature_dim"], param["obs_gen_lstm_dim"], col_dim, col_type, c_dim)
+			obs_gen = ObservedGenerator_LSTM(param["z_dim"], param["obs_gen_feature_dim"], param["obs_gen_lstm_dim"], col_dim, col_type, col_ind, x_dim, mask_dim)
 		elif config["gen_model"] == "MLP":
 			obs_gen = ObservedGenerator_MLP(param["z_dim"], param["obs_gen_hidden_dims"], x_dim,  mask_dim, col_type, col_ind)
 	else:
