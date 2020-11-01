@@ -1,7 +1,7 @@
 # Corrupt Domain Adaptation
 
 ## Framework
-![avatar](https://github.com/ruclty/CorruptAdaptation/blob/master/figs/Framework.jpg)
+![avatar](https://github.com/ruclty/dagan/blob/master/figs/architecture.png)
 
 ## Requirements
 Before running the code, please make sure your Python version is above **3.6**.
