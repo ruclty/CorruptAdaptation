@@ -13,7 +13,6 @@ import os
 import time
 import logging
 from pandas.api.types import is_object_dtype
-from evaluate_preprocess import data_processing
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
 
@@ -329,58 +328,46 @@ def generate_augment_data(files):
 
 def thread_run(config):
 	logging.basicConfig(filename=config["output"]+'_log.log', level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT)
-	noise_list = config["noise_list"]
 
-	test_dir = config["test_dir"]
-	train_dir = config["train_dir"]
-	adapt_dir = config["adapt_dir"]
-	gadapt_dir = config["gadapt_dir"]
-	gan_dir = config["gan_dir"]
+	train_set = config["train_set"]
+	test_set = config["test_set"]
 
+	assert len(train_set) == len(test_set)
+
+	test_files = []
 	train_files = []
-	test_files = []	
-	clean_data = pd.read_csv(config["clean_path"])
-	for noise in noise_list:
-		logging.info(test_dir+"test_{}.csv".format(noise))
-		test = pd.read_csv(test_dir+"test_{}.csv".format(noise))
-		test_files.append(test)
-		if config["run"] == "train":
-			path = train_dir+"train_0.6_{}.csv".format(noise)
-		elif config["run"] == "kadapt":
-			path = adapt_dir+"kadapt_{}.csv".format(noise)
-		elif config["run"] == "clean":
-			path = config["clean_path"]
-		elif config["run"] == "gan":
-			path = gadapt_dir+"gadapt_{}.csv".format(noise)
-		elif config["run"] == "gan_nomask":
-			path = gan_dir+"impute_gadapt_{}.csv".format(noise)
-		logging.info(path)
-		train_data = pd.read_csv(path)
-		train_files.append(train_data)
 
-	if config["train_method"] == "no_consistency":
+	for i in range(len(train_set)):
+		dtrain = train_set[i]
+		dtest = test_set[i]
+		logging.info(dtest)
+		test_files.append(pd.read_csv(dtest))
+		logging.info(dtrain)
+		train_files.append(pd.read_csv(dtrain))
+
+	if config["objective"] == "ERM":
 		#test_data = generate_augment_data(test_files)
 		train_data = pd.concat(train_files)
 		mlp_vals, mlp_losses = train_classifiers_simple(config, train_data, test_files)
-	elif config["train_method"] == "with_consistency":
+	elif config["objective"] == "GDRO":
 		#test_data = generate_augment_data(test_files)
 		mlp_vals, mlp_losses = train_classifiers_with_consistency(config, train_files, test_files)
 		
 	for i, mlp_val in enumerate(mlp_vals):
-		mlp_vals[i] = [config["train_dir"]]+mlp_val
-		columns = ["file", "l2", "f1_valid"]
+		mlp_vals[i] = mlp_val
+		columns = ["param", "f1_valid"]
 		for i in range(len(test_files)):
 			columns.append("f1_test-{}".format(i))
 		df = pd.DataFrame(mlp_vals, columns=columns)
-		df.to_csv(config["output"]+".csv".format(noise), index=None)
+		df.to_csv(config["output"]+".csv", index=None)
 
 	for i, mlp_loss in enumerate(mlp_losses):
-		mlp_losses[i] = [config["train_dir"]]+mlp_loss
-		columns = ["file", "l2", "f1_valid"]
+		mlp_losses[i] = mlp_loss
+		columns = ["param", "f1_valid"]
 		for i in range(len(test_files)):
 			columns.append("f1_test-{}".format(i))
 		df = pd.DataFrame(mlp_losses, columns=columns)
-		df.to_csv(config["output"]+"_loss.csv".format(noise), index=None)
+		df.to_csv(config["output"]+"_loss.csv", index=None)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
