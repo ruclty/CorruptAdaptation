@@ -32,5 +32,9 @@ Folder "code/params" contains examples, you can run the code using those paramet
 ## Run
 Run the code with the following command :
 ```sh
-python code/train.py [parameter file]
+python code/train.py [parameter file] [gpu_id]
+```
+A example running command:
+```sh
+python code/train.py code/params/param-eyestate-MNAR 0
 ```
