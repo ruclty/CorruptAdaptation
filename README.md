@@ -1,7 +1,7 @@
-# Corrupt Domain Adaptation
+# Adaptive Data Augmentation for Supervised Learning over Missing Data
 
 ## Framework
-![avatar](https://github.com/ruclty/dagan/blob/master/figs/architecture.png)
+![avatar](https://github.com/ruclty/dagan/blob/master/figs/architecture.jpg)
 
 ## Requirements
 Before running the code, please make sure your Python version is above **3.6**.
