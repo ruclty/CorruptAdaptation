@@ -1,6 +1,5 @@
 # DAGAN
-DAGAN is a framework used in adaptive data augmentation for supervised learning over missing data. It extracts noise patterns from target data, and adapts the source data with the extracted target noise patterns while still preserving supervision signals in the source. Then, it patches the ML model by
-retraining it on the adapted data, in order to better serve the target.
+DAGAN is a framework used in adaptive data augmentation for supervised learning over missing data. It extracts noise patterns from target data, and adapts the source data with the extracted target noise patterns while still preserving supervision signals in the source. Then, by retraining it on the adapted data, you can get model better serving the target.
 
 ## Framework
 As in the following figure, DAGAN consists of two connected GAN networks. The first GAN learns the noise pattern from the target, for target mask generation. The second GAN uses the learned target mask to augment the source data, for source data adaptation. The augmented source data can be used to retrain the ML model.
