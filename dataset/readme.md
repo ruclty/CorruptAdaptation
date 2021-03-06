@@ -1,5 +1,5 @@
 ## Data Sets for DAGAN Paper
-The table below summarizes all the datasets. Here's a brief description of some of the columns:  #Rec (records), #N (numerical attributes), #C (categorical attributes), and #L (unique labels).
+The table below summarizes all the datasets. Here's a brief description of some of the columns:  #Rec (records), #N (numerical attributes), #C (categorical attributes), and #L (unique labels).
 
 <table>
   <thead>
