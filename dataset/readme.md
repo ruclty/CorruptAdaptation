@@ -1,5 +1,59 @@
-## Data Sets
+## Data Sets for DAGAN Paper
+The table below summarizes all the datasets. Here's a brief description of some of the columns:  #Rec (records), #N (numerical attributes), #C (categorical attributes), and #L (unique labels).
 
+<table>
+  <thead>
+    <tr>
+      <th>Dataset</th>
+      <th>Area</th>
+      <th>#Rec</th>
+      <th>#N</th>
+      <th>#C</th>
+      <th>#L</th>
+      <th>Label Distribution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Adult</td>
+      <td>Social</td>
+      <td>16,567</td>
+      <td>6</td>
+      <td>8</td>
+      <td>2</td>
+      <td>1.0 : 3.0</td>
+    </tr>
+    <tr>
+      <td>EyeState</td>
+      <td>Health</td>
+      <td>14,977</td>
+      <td>14</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1.0 : 1.3</td>
+    </tr>
+    <tr>
+      <td>Ipums</td>
+      <td>Social</td>
+      <td>16,329</td>
+      <td>16</td>
+      <td>43</td>
+      <td>7</td>
+      <td>65:9:11:5:6:3:1</td>
+    </tr>
+    <tr>
+      <td>OkCupid</td>
+      <td>Social</td>
+      <td>50,789</td>
+      <td>3</td>
+      <td>13</td>
+      <td>3</td>
+      <td>7 : 2 : 1</td>
+    </tr>
+  </tbody>
+</table>
+
+## DataSet Details
 ### Adult
 [Adult](https://archive.ics.uci.edu/ml/datasets/Adult.) contains personal information from the 1994 US census. Each record in the dataset corresponds to a person with mixed data types, i.e., 8 categorical and 6 numerical attribute values.
 The attribute income is used as the label to predict whether the person has income larger than 50K per year (positive) or not (negative).
