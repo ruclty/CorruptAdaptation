@@ -6,7 +6,7 @@ An example is showed in the following figure. Suppose that a hospital trains a c
 ![avatar](https://github.com/ruclty/dagan/blob/master/figs/example.png)
 To tackle this problem, DAGAN extracts noise patterns from target data, and adapts the source data with the extracted target noise patterns while still preserving supervision signals in the source. Then, by retraining it on the adapted data, you can get model better serving the target.
 
-[^_^]:
+
     ## Framework
     As in the following figure, DAGAN consists of two connected GAN networks. The first GAN learns the noise pattern from the target, for target mask generation. The second GAN uses the learned target mask to augment the source data, for source data adaptation. The augmented source data can be used to retrain the ML model.
     ![avatar](https://github.com/ruclty/dagan/blob/master/figs/architecture.jpg)
