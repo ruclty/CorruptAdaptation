@@ -39,7 +39,7 @@ The table below summarizes all the datasets. Here's a brief description of some 
       <td>16</td>
       <td>43</td>
       <td>7</td>
-      <td>65:9:11:5:6:3:1</td>
+      <td>65 : 9 : 11 : 5 : 6 : 3 : 1</td>
     </tr>
     <tr>
       <td>OkCupid</td>
