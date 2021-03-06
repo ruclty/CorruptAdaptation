@@ -49,11 +49,15 @@ python code/train.py code/params/param-eyestate-MNAR 0
 ### Step4: Evaluation
 Run the code with the following command :
 ```sh
-python code/evaluate.py --train=[training file] --test=[test file] --label_col=[name of label column] --output=[output filename] --device=[gpu id]
+python code/evaluate.py --train=[training file] --test=[test file] 
+                        --label_col=[name of label column] --output=[output filename] 
+                        --device=[gpu id]
 ```
 A example running command:
 ```sh
-python code/evaluate.py --train=ipums_adapt.csv --test=dataset/ipums/ipums_test.csv --label_col=movedin --output=ipums_result --device=0
+python code/evaluate.py --train=ipums_adapt.csv --test=dataset/ipums/ipums_test.csv 
+                        --label_col=movedin --output=ipums_result 
+                        --device=0
 ```
 
 ## The Team
